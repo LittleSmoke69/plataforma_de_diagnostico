@@ -29,6 +29,14 @@ export async function POST(req: Request) {
       )
     }
 
+    // Verifica se o usuário tem senha cadastrada
+    if (!user.password) {
+      return NextResponse.json(
+        { error: 'Email ou senha incorretos' },
+        { status: 401 }
+      )
+    }
+
     // Verifica se a senha confere (comparação em texto plano)
     if (user.password !== password) {
       return NextResponse.json(
