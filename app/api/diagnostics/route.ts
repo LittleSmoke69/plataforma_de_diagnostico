@@ -4,8 +4,11 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { canCreateDiagnostic } from '@/lib/utils/subscription'
 import { Database } from '@/types/database'
 
+type DiagnosticInsert = Omit<
+  Database['public']['Tables']['diagnostics']['Insert'],
+  'id' | 'created_at' | 'updated_at' | 'general_score' | 'strategic_reading' | 'pdf_report_url' | 'realization_date'
+>
 type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
-type DiagnosticInsert = Database['public']['Tables']['diagnostics']['Insert']
 
 export async function POST(req: Request) {
   try {
@@ -36,8 +39,8 @@ export async function POST(req: Request) {
     // Cria o diagnóstico
     const diagnosticData: DiagnosticInsert = {
       user_id: user.id,
-      company_name,
-      analysis_period,
+      company_name: String(company_name),
+      analysis_period: String(analysis_period),
       status: 'pending',
     }
 

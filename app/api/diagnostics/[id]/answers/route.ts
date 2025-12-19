@@ -3,8 +3,10 @@ import { getCurrentUser } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Database } from '@/types/database'
 
-type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
-type DiagnosticDetailInsert = Database['public']['Tables']['diagnostic_details']['Insert']
+type DiagnosticDetailInsert = Omit<
+  Database['public']['Tables']['diagnostic_details']['Insert'],
+  'id' | 'created_at'
+>
 
 export async function POST(
   req: Request,
@@ -26,23 +28,31 @@ export async function POST(
     }
 
     // Verifica se o diagnóstico pertence ao usuário
-    const { data: diagnosticData, error: diagnosticError } = await supabase
+    const { data: diagnostic, error: diagnosticError } = await supabase
       .from('diagnostics')
       .select('id')
       .eq('id', params.id)
       .eq('user_id', user.id)
       .single()
 
-    const diagnostic = diagnosticData as Pick<Diagnostic, 'id'> | null
-
     if (diagnosticError || !diagnostic) {
       return NextResponse.json({ error: 'Diagnóstico não encontrado' }, { status: 404 })
     }
 
-    // Valida e tipa as respostas
-    if (!Array.isArray(answers) || answers.length === 0) {
-      return NextResponse.json({ error: 'answers deve ser um array não vazio' }, { status: 400 })
-    }
+    // Valida e prepara as respostas para inserção
+    const answersToInsert: DiagnosticDetailInsert[] = answers.map((answer: any) => {
+      if (!answer.area || !answer.question || !answer.answer) {
+        throw new Error('Cada resposta deve ter: area, question e answer')
+      }
+
+      return {
+        diagnostic_id: params.id,
+        area: String(answer.area),
+        question: String(answer.question),
+        answer: String(answer.answer),
+        ai_feedback: answer.ai_feedback || null,
+      }
+    })
 
     // Remove respostas antigas
     await supabase.from('diagnostic_details').delete().eq('diagnostic_id', params.id)
@@ -50,7 +60,7 @@ export async function POST(
     // Insere novas respostas
     const { error: insertError } = await supabase
       .from('diagnostic_details')
-      .insert(answers as DiagnosticDetailInsert[])
+      .insert(answersToInsert as any)
 
     if (insertError) {
       console.error('Erro ao salvar respostas:', insertError)
@@ -60,7 +70,10 @@ export async function POST(
     return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Erro no endpoint:', error)
-    return NextResponse.json({ error: error.message || 'Erro interno' }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || 'Erro interno' },
+      { status: error.message?.includes('deve ter') ? 400 : 500 }
+    )
   }
 }
 

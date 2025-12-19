@@ -21,26 +21,30 @@ export async function POST(
 
     // Verifica se o diagnóstico pertence ao usuário
     const serviceClient = createServiceClient()
-    const { data: diagnostic, error: diagnosticError } = await serviceClient
+    const { data: diagnosticData, error: diagnosticError } = await serviceClient
       .from('diagnostics')
       .select('*')
       .eq('id', params.id)
       .eq('user_id', user.id)
       .single()
 
+    const diagnostic = diagnosticData as Diagnostic | null
+
     if (diagnosticError || !diagnostic) {
       return NextResponse.json({ error: 'Diagnóstico não encontrado' }, { status: 404 })
     }
 
     // Busca detalhes
-    const { data: details } = await serviceClient
+    const { data: detailsData } = await serviceClient
       .from('diagnostic_details')
       .select('*')
       .eq('diagnostic_id', params.id)
       .order('area', { ascending: true })
 
+    const details = (detailsData || []) as DiagnosticDetail[]
+
     // Gera o HTML do PDF
-    const htmlContent = generatePDFHTML(diagnostic, details || [])
+    const htmlContent = generatePDFHTML(diagnostic, details)
 
     // Gera PDF com puppeteer
     const pdfBuffer = await generatePDFWithPuppeteer(htmlContent)
@@ -48,7 +52,8 @@ export async function POST(
     // Retorna o PDF diretamente como resposta HTTP
     const fileName = `diagnostico-${diagnostic.company_name}-${Date.now()}.pdf`
 
-    return new NextResponse(pdfBuffer, {
+    // Converte Buffer para Uint8Array para compatibilidade com NextResponse
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
@@ -94,10 +99,10 @@ export async function GET(
       .eq('diagnostic_id', params.id)
       .order('area', { ascending: true })
 
-    const details = detailsData as DiagnosticDetail[] | null
+    const details = (detailsData || []) as DiagnosticDetail[]
 
     // Gera o HTML do PDF
-    const htmlContent = generatePDFHTML(diagnostic, details || [])
+    const htmlContent = generatePDFHTML(diagnostic, details)
 
     // Gera PDF com puppeteer
     const pdfBuffer = await generatePDFWithPuppeteer(htmlContent)
@@ -105,7 +110,8 @@ export async function GET(
     // Retorna o PDF diretamente como resposta HTTP
     const fileName = `diagnostico-${diagnostic.company_name}-${Date.now()}.pdf`
 
-    return new NextResponse(pdfBuffer, {
+    // Converte Buffer para Uint8Array para compatibilidade com NextResponse
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

@@ -4,9 +4,8 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { DiagnosticResult } from '@/types/diagnostic'
 import { Database } from '@/types/database'
 
-type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
 type DiagnosticUpdate = Database['public']['Tables']['diagnostics']['Update']
-type DiagnosticDetail = Database['public']['Tables']['diagnostic_details']['Row']
+type DiagnosticDetailUpdate = Database['public']['Tables']['diagnostic_details']['Update']
 
 export async function POST(
   req: Request,
@@ -23,14 +22,12 @@ export async function POST(
     const serviceClient = createServiceClient()
 
     // Verifica se o diagnóstico pertence ao usuário
-    const { data: diagnosticData, error: diagnosticError } = await serviceClient
+    const { data: diagnostic, error: diagnosticError } = await serviceClient
       .from('diagnostics')
       .select('*')
       .eq('id', params.id)
       .eq('user_id', user.id)
       .single()
-
-    const diagnostic = diagnosticData as Diagnostic | null
 
     if (diagnosticError || !diagnostic) {
       console.error('Erro ao buscar diagnóstico:', diagnosticError)
@@ -38,13 +35,11 @@ export async function POST(
     }
 
     // Busca todas as respostas
-    const { data: answersData, error: answersError } = await serviceClient
+    const { data: answers, error: answersError } = await serviceClient
       .from('diagnostic_details')
       .select('*')
       .eq('diagnostic_id', params.id)
       .order('area', { ascending: true })
-
-    const answers = answersData as DiagnosticDetail[] | null
 
     if (answersError || !answers || answers.length === 0) {
       return NextResponse.json(
@@ -81,16 +76,17 @@ export async function POST(
     }
 
     // Atualiza o diagnóstico com os resultados
-    const updateData: DiagnosticUpdate = {
+    const updateData: Partial<DiagnosticUpdate> = {
       general_score: geminiResponse.general_score,
       strategic_reading: geminiResponse.strategic_reading,
       status: 'completed',
       realization_date: new Date().toISOString(),
     }
 
-    const { error: updateError } = await serviceClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (serviceClient as any)
       .from('diagnostics')
-      .update(updateData as any)
+      .update(updateData)
       .eq('id', params.id)
 
     if (updateError) {
@@ -101,11 +97,14 @@ export async function POST(
     // Atualiza feedback por área (opcional)
     if (geminiResponse.charts_data?.areas) {
       for (const area of geminiResponse.charts_data.areas) {
-        await serviceClient
+        const feedbackData: Partial<DiagnosticDetailUpdate> = {
+          ai_feedback: `Pontuação: ${area.score}/100`,
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (serviceClient as any)
           .from('diagnostic_details')
-          .update({
-            ai_feedback: `Pontuação: ${area.score}/100`,
-          })
+          .update(feedbackData)
           .eq('diagnostic_id', params.id)
           .eq('area', area.name.toLowerCase())
       }
@@ -118,7 +117,7 @@ export async function POST(
   }
 }
 
-function buildPrompt(diagnostic: Diagnostic, answers: DiagnosticDetail[]): string {
+function buildPrompt(diagnostic: any, answers: any[]): string {
   const answersByArea: Record<string, any[]> = {}
   answers.forEach((answer) => {
     if (!answersByArea[answer.area]) {
