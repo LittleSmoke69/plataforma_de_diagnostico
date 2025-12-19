@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { Database } from '@/types/database'
 
 type User = Database['public']['Tables']['users']['Row']
+type UserInsert = Omit<Database['public']['Tables']['users']['Insert'], 'id' | 'created_at' | 'updated_at'>
 
 export async function POST(req: Request) {
   try {
@@ -25,12 +26,15 @@ export async function POST(req: Request) {
     const supabase = createServiceClient()
 
     // Verifica se o email já existe
-    const { data: existingUser } = await supabase
+    const { data: existingUserData } = await supabase
       .from('users')
       .select('id')
       .eq('email', email.toLowerCase().trim())
       .single()
 
+    const existingUser = existingUserData as Pick<User, 'id'> | null
+
+    // Se encontrou um usuário (mesmo que seja erro de query, se retornou dados, o email existe)
     if (existingUser) {
       return NextResponse.json(
         { error: 'Email já cadastrado' },
@@ -39,13 +43,15 @@ export async function POST(req: Request) {
     }
 
     // Cria o usuário
+    const userInsertData: UserInsert = {
+      email: email.toLowerCase().trim(),
+      password: password, // ⚠️ Senha em texto plano
+      diagnostics_limit: 4,
+    }
+
     const { data, error: userError } = await supabase
       .from('users')
-      .insert({
-        email: email.toLowerCase().trim(),
-        password: password, // ⚠️ Senha em texto plano
-        diagnostics_limit: 4,
-      })
+      .insert(userInsertData as any)
       .select('id, email')
       .single()
 

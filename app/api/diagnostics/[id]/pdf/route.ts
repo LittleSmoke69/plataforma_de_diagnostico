@@ -3,6 +3,10 @@ import { getCurrentUser } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { Database } from '@/types/database'
+
+type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
+type DiagnosticDetail = Database['public']['Tables']['diagnostic_details']['Row']
 
 export async function POST(
   req: Request,
@@ -70,23 +74,27 @@ export async function GET(
 
     // Verifica se o diagnóstico pertence ao usuário
     const serviceClient = createServiceClient()
-    const { data: diagnostic, error: diagnosticError } = await serviceClient
+    const { data: diagnosticData, error: diagnosticError } = await serviceClient
       .from('diagnostics')
       .select('*')
       .eq('id', params.id)
       .eq('user_id', user.id)
       .single()
 
+    const diagnostic = diagnosticData as Diagnostic | null
+
     if (diagnosticError || !diagnostic) {
       return NextResponse.json({ error: 'Diagnóstico não encontrado' }, { status: 404 })
     }
 
     // Busca detalhes
-    const { data: details } = await serviceClient
+    const { data: detailsData } = await serviceClient
       .from('diagnostic_details')
       .select('*')
       .eq('diagnostic_id', params.id)
       .order('area', { ascending: true })
+
+    const details = detailsData as DiagnosticDetail[] | null
 
     // Gera o HTML do PDF
     const htmlContent = generatePDFHTML(diagnostic, details || [])
@@ -152,7 +160,7 @@ async function generatePDFWithPuppeteer(htmlContent: string): Promise<Buffer> {
   }
 }
 
-function generatePDFHTML(diagnostic: any, details: any[]): string {
+function generatePDFHTML(diagnostic: Diagnostic, details: DiagnosticDetail[]): string {
   const date = diagnostic.realization_date
     ? format(new Date(diagnostic.realization_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
     : format(new Date(diagnostic.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })

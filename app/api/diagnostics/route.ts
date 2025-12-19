@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { canCreateDiagnostic } from '@/lib/utils/subscription'
+import { Database } from '@/types/database'
+
+type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
+type DiagnosticInsert = Database['public']['Tables']['diagnostics']['Insert']
 
 export async function POST(req: Request) {
   try {
@@ -30,18 +34,22 @@ export async function POST(req: Request) {
     }
 
     // Cria o diagnóstico
-    const { data: diagnostic, error } = await supabase
+    const diagnosticData: DiagnosticInsert = {
+      user_id: user.id,
+      company_name,
+      analysis_period,
+      status: 'pending',
+    }
+
+    const { data, error } = await supabase
       .from('diagnostics')
-      .insert({
-        user_id: user.id,
-        company_name,
-        analysis_period,
-        status: 'pending',
-      })
-      .select()
+      .insert(diagnosticData as any)
+      .select('id')
       .single()
 
-    if (error) {
+    const diagnostic = data as Pick<Diagnostic, 'id'> | null
+
+    if (error || !diagnostic) {
       console.error('Erro ao criar diagnóstico:', error)
       return NextResponse.json({ error: 'Erro ao criar diagnóstico' }, { status: 500 })
     }
