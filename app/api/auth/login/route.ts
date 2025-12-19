@@ -18,19 +18,11 @@ export async function POST(req: Request) {
     // Busca o usuário pelo email
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, password')
       .eq('email', email.toLowerCase().trim())
       .single()
 
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Email ou senha incorretos' },
-        { status: 401 }
-      )
-    }
-
-    // Verifica se o usuário tem senha cadastrada
-    if (!user.password) {
+    if (userError || !user || !user.password) {
       return NextResponse.json(
         { error: 'Email ou senha incorretos' },
         { status: 401 }

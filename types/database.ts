@@ -20,7 +20,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id: string
           email: string
           password?: string | null
           current_plan_id?: string | null
