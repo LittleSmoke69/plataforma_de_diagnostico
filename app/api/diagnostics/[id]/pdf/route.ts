@@ -115,7 +115,15 @@ async function generatePDFWithPuppeteer(htmlContent: string): Promise<Buffer> {
     const puppeteer = await import('puppeteer')
     const browser = await puppeteer.default.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+      ],
     })
 
     const page = await browser.newPage()
@@ -134,9 +142,13 @@ async function generatePDFWithPuppeteer(htmlContent: string): Promise<Buffer> {
 
     await browser.close()
     return Buffer.from(pdfBuffer)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao gerar PDF com puppeteer:', error)
-    throw new Error('Erro ao gerar PDF')
+    // Em ambientes serverless como Netlify, Puppeteer pode não funcionar
+    // Considere usar uma solução alternativa como uma API externa de PDF
+    throw new Error(
+      `Erro ao gerar PDF: ${error.message || 'Puppeteer não disponível. Em ambientes serverless, considere usar uma API externa de geração de PDF.'}`
+    )
   }
 }
 

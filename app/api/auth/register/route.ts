@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { Database } from '@/types/database'
+
+type User = Database['public']['Tables']['users']['Row']
 
 export async function POST(req: Request) {
   try {
@@ -36,17 +39,19 @@ export async function POST(req: Request) {
     }
 
     // Cria o usuário
-    const { data: newUser, error: userError } = await supabase
+    const { data, error: userError } = await supabase
       .from('users')
       .insert({
         email: email.toLowerCase().trim(),
         password: password, // ⚠️ Senha em texto plano
         diagnostics_limit: 4,
       })
-      .select()
+      .select('id, email')
       .single()
 
-    if (userError) {
+    const newUser = data as Pick<User, 'id' | 'email'> | null
+
+    if (userError || !newUser) {
       console.error('Erro ao criar usuário:', userError)
       return NextResponse.json(
         { error: 'Erro ao criar conta' },

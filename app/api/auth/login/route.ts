@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
+import { Database } from '@/types/database'
+
+type UserWithPassword = Database['public']['Tables']['users']['Row']
 
 export async function POST(req: Request) {
   try {
@@ -16,11 +19,13 @@ export async function POST(req: Request) {
     const supabase = createServiceClient()
 
     // Busca o usuário pelo email
-    const { data: user, error: userError } = await supabase
+    const { data, error: userError } = await supabase
       .from('users')
       .select('id, email, password')
       .eq('email', email.toLowerCase().trim())
       .single()
+
+    const user = data as UserWithPassword | null
 
     if (userError || !user || !user.password) {
       return NextResponse.json(
