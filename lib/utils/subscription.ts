@@ -1,5 +1,10 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { isAfter } from 'date-fns'
+import { Database } from '@/types/database'
+
+type UserSubscription = Database['public']['Tables']['user_subscriptions']['Row']
+type UserSubscriptionUpdate = Database['public']['Tables']['user_subscriptions']['Update']
+type User = Database['public']['Tables']['users']['Row']
 
 export interface SubscriptionStatus {
   isActive: boolean
@@ -13,7 +18,7 @@ export interface SubscriptionStatus {
 export async function checkSubscriptionActive(userId: string): Promise<SubscriptionStatus> {
   const supabase = createServiceClient()
 
-  const { data: subscription, error } = await supabase
+  const { data: subscriptionData, error } = await supabase
     .from('user_subscriptions')
     .select('*')
     .eq('user_id', userId)
@@ -21,6 +26,8 @@ export async function checkSubscriptionActive(userId: string): Promise<Subscript
     .order('end_date', { ascending: false })
     .limit(1)
     .single()
+
+  const subscription = subscriptionData as UserSubscription | null
 
   if (error || !subscription) {
     return {
@@ -36,9 +43,14 @@ export async function checkSubscriptionActive(userId: string): Promise<Subscript
 
   // Se expirou, atualiza o status
   if (!isActive && subscription.status === 'active') {
-    await supabase
+    const updateData: Partial<UserSubscriptionUpdate> = {
+      status: 'expired',
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
       .from('user_subscriptions')
-      .update({ status: 'expired' })
+      .update(updateData)
       .eq('id', subscription.id)
   }
 
@@ -79,11 +91,13 @@ export async function canCreateDiagnostic(userId: string): Promise<{
 
   // Se não tem assinatura ativa, usa o limite do usuário diretamente
   const supabase = createServiceClient()
-  const { data: user } = await supabase
+  const { data: userData } = await supabase
     .from('users')
     .select('diagnostics_limit')
     .eq('id', userId)
     .single()
+
+  const user = userData as Pick<User, 'diagnostics_limit'> | null
 
   if (!user) {
     return {
@@ -127,11 +141,13 @@ export async function getRemainingDiagnostics(
   const supabase = createServiceClient()
 
   // Busca o limite do usuário
-  const { data: user } = await supabase
+  const { data: userData } = await supabase
     .from('users')
     .select('diagnostics_limit')
     .eq('id', userId)
     .single()
+
+  const user = userData as Pick<User, 'diagnostics_limit'> | null
 
   if (!user) {
     return 0
@@ -140,7 +156,7 @@ export async function getRemainingDiagnostics(
   const limit = user.diagnostics_limit || 4
 
   // Busca a assinatura ativa para obter a data de início
-  const { data: subscription } = await supabase
+  const { data: subscriptionData } = await supabase
     .from('user_subscriptions')
     .select('start_date, end_date')
     .eq('user_id', userId)
@@ -148,6 +164,8 @@ export async function getRemainingDiagnostics(
     .order('end_date', { ascending: false })
     .limit(1)
     .single()
+
+  const subscription = subscriptionData as Pick<UserSubscription, 'start_date' | 'end_date'> | null
 
   // Se não tem assinatura ativa, conta todos os diagnósticos do usuário
   if (!subscription) {
@@ -188,11 +206,13 @@ export async function getSubscriptionInfo(userId: string) {
   } else {
     // Se não tem assinatura ativa, calcula baseado no limite do usuário
     const supabase = createServiceClient()
-    const { data: user } = await supabase
+    const { data: userData } = await supabase
       .from('users')
       .select('diagnostics_limit')
       .eq('id', userId)
       .single()
+
+    const user = userData as Pick<User, 'diagnostics_limit'> | null
 
     if (user) {
       const limit = user.diagnostics_limit || 4
@@ -207,11 +227,13 @@ export async function getSubscriptionInfo(userId: string) {
   }
 
   const supabase = createServiceClient()
-  const { data: user } = await supabase
+  const { data: userData } = await supabase
     .from('users')
     .select('diagnostics_limit')
     .eq('id', userId)
     .single()
+
+  const user = userData as Pick<User, 'diagnostics_limit'> | null
 
   return {
     subscription,
