@@ -4,6 +4,10 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { DiagnosticResultView } from '@/components/DiagnosticResultView'
 import { GeneratePDFButton } from '@/components/GeneratePDFButton'
 import { PageHeader } from '@/components/PageHeader'
+import { Database } from '@/types/database'
+
+type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
+type DiagnosticDetail = Database['public']['Tables']['diagnostic_details']['Row']
 
 export default async function DiagnosticResultPage({
   params,
@@ -22,12 +26,14 @@ export default async function DiagnosticResultPage({
   const supabase = createServiceClient()
 
   // Busca o diagnóstico
-  const { data: diagnostic, error } = await supabase
+  const { data: diagnosticData, error } = await supabase
     .from('diagnostics')
     .select('*')
     .eq('id', params.id)
     .eq('user_id', userId)
     .single()
+
+  const diagnostic = diagnosticData as Diagnostic | null
 
   if (error || !diagnostic) {
     redirect('/app/dashboard')
@@ -39,10 +45,12 @@ export default async function DiagnosticResultPage({
   }
 
   // Busca detalhes para montar o resultado
-  const { data: details } = await supabase
+  const { data: detailsData } = await supabase
     .from('diagnostic_details')
     .select('*')
     .eq('diagnostic_id', params.id)
+
+  const details = (detailsData || []) as DiagnosticDetail[]
 
   // Monta objeto de resultado a partir dos dados salvos
   const result: any = {
