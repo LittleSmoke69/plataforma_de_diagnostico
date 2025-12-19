@@ -53,9 +53,12 @@ export async function POST(
 
     // Chama a API do Gemini
     let geminiResponse: DiagnosticResult | null
+    console.time(`[GenerateDiagnostic] Gemini API call - ${params.id}`)
     try {
       geminiResponse = await callGeminiAPI(prompt)
+      console.timeEnd(`[GenerateDiagnostic] Gemini API call - ${params.id}`)
     } catch (error: any) {
+      console.timeEnd(`[GenerateDiagnostic] Gemini API call - ${params.id}`)
       console.error('Erro ao chamar Gemini API:', error)
       return NextResponse.json(
         {
@@ -76,6 +79,7 @@ export async function POST(
     }
 
     // Atualiza o diagnóstico com os resultados
+    console.time(`[GenerateDiagnostic] DB update results - ${params.id}`)
     const updateData: Partial<DiagnosticUpdate> = {
       general_score: geminiResponse.general_score,
       strategic_reading: geminiResponse.strategic_reading,
@@ -90,25 +94,33 @@ export async function POST(
       .eq('id', params.id)
 
     if (updateError) {
+      console.timeEnd(`[GenerateDiagnostic] DB update results - ${params.id}`)
       console.error('Erro ao atualizar diagnóstico:', updateError)
       return NextResponse.json({ error: 'Erro ao salvar resultados' }, { status: 500 })
     }
 
-    // Atualiza feedback por área (opcional)
+    // Atualiza feedback por área (opcional) em paralelo
     if (geminiResponse.charts_data?.areas) {
-      for (const area of geminiResponse.charts_data.areas) {
+      const updatePromises = geminiResponse.charts_data.areas.map(async (area) => {
         const feedbackData: Partial<DiagnosticDetailUpdate> = {
           ai_feedback: `Pontuação: ${area.score}/100`,
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (serviceClient as any)
+        const { error } = await (serviceClient as any)
           .from('diagnostic_details')
           .update(feedbackData)
           .eq('diagnostic_id', params.id)
           .eq('area', area.name.toLowerCase())
-      }
+        
+        if (error) {
+          console.error(`Erro ao atualizar feedback da área ${area.name}:`, error)
+        }
+      })
+
+      await Promise.all(updatePromises)
     }
+    console.timeEnd(`[GenerateDiagnostic] DB update results - ${params.id}`)
 
     return NextResponse.json({ success: true, result: geminiResponse })
   } catch (error: any) {
@@ -198,7 +210,7 @@ async function callGeminiAPI(prompt: string): Promise<DiagnosticResult | null> {
   }
 
   const url =
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
 
   const body = {
     contents: [

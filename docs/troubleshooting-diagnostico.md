@@ -34,7 +34,7 @@ A variável de ambiente `GEMINI_API_KEY` não está definida no arquivo `.env.lo
    - Gere uma nova chave se necessário
 
 2. **Modelo não disponível**
-   - O modelo `gemini-2.5-flash` pode não estar disponível na sua região
+   - O modelo `gemini-1.5-flash` pode não estar disponível na sua região
    - Tente usar `gemini-1.5-flash` ou `gemini-pro`
 
 3. **Limite de requisições excedido**
@@ -52,7 +52,7 @@ A variável de ambiente `GEMINI_API_KEY` não está definida no arquivo `.env.lo
 2. **Teste a chave manualmente:**
    ```bash
    curl -X POST \
-     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=SUA_CHAVE" \
+     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=SUA_CHAVE" \
      -H "Content-Type: application/json" \
      -d '{"contents":[{"parts":[{"text":"Teste"}]}]}'
    ```

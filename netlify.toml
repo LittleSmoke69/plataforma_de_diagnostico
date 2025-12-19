@@ -11,6 +11,7 @@
   # Considere usar uma solução alternativa para geração de PDF em produção
 
 [functions]
-  # Timeout aumentado para funções que podem gerar PDF
   node_bundler = "esbuild"
+  # Timeout estendido para 30 segundos para lidar com gerações de IA
+  timeout = 30
 

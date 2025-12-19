@@ -104,5 +104,5 @@ Planos padrão são criados automaticamente pelo script SQL:
 
 ### Erro ao chamar Gemini API
 - Verifique se a chave de API está correta
-- Confirme que o modelo `gemini-2.5-flash` está disponível na sua região
+- Confirme que o modelo `gemini-1.5-flash` está disponível na sua região
 
