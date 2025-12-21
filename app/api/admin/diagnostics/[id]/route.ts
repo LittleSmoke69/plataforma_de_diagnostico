@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { Database } from '@/types/database'
+
+type Diagnostic = Database['public']['Tables']['diagnostics']['Row']
 
 /**
  * GET /api/admin/diagnostics/[id]
@@ -21,7 +24,7 @@ export async function GET(
     const supabase = createServiceClient()
 
     // Busca o diagnóstico
-    const { data: diagnostic, error: diagnosticError } = await supabase
+    const { data: diagnosticData, error: diagnosticError } = await supabase
       .from('diagnostics')
       .select('*')
       .eq('id', params.id)
@@ -33,6 +36,12 @@ export async function GET(
       }
       console.error('Erro ao buscar análise:', diagnosticError)
       return NextResponse.json({ error: 'Erro ao buscar análise' }, { status: 500 })
+    }
+
+    const diagnostic = diagnosticData as Diagnostic | null
+
+    if (!diagnostic) {
+      return NextResponse.json({ error: 'Análise não encontrada' }, { status: 404 })
     }
 
     // Busca os detalhes da análise
@@ -58,7 +67,7 @@ export async function GET(
     const formattedDiagnostic = {
       id: diagnostic.id,
       user_id: diagnostic.user_id,
-      user_email: user?.email || 'N/A',
+      user_email: (user as { email?: string } | null)?.email || 'N/A',
       company_name: diagnostic.company_name,
       analysis_period: diagnostic.analysis_period,
       status: diagnostic.status,
