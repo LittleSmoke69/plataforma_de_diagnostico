@@ -3,16 +3,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
-import { LayoutDashboard, FileText, User, X } from 'lucide-react'
+import { LayoutDashboard, FileText, User, X, Settings } from 'lucide-react'
 import { LogoutButton } from './LogoutButton'
 
 interface SidebarProps {
   userEmail?: string
+  isAdmin?: boolean
   isOpen?: boolean
   onClose?: () => void
 }
 
-export function Sidebar({ userEmail, isOpen = false, onClose }: SidebarProps) {
+export function Sidebar({ userEmail, isAdmin = false, isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
 
   const navigation = [
@@ -21,6 +22,15 @@ export function Sidebar({ userEmail, isOpen = false, onClose }: SidebarProps) {
       href: '/app/dashboard',
       icon: LayoutDashboard,
     },
+    ...(isAdmin
+      ? [
+          {
+            name: 'Admin',
+            href: '/app/admin',
+            icon: Settings,
+          },
+        ]
+      : []),
   ]
 
   const isActive = (href: string) => {

@@ -4,8 +4,11 @@ import { createServiceClient } from '@/lib/supabase/server'
 export interface User {
   id: string
   email: string
+  name: string | null
   current_plan_id: string | null
   diagnostics_limit: number
+  role: 'user' | 'admin'
+  status: 'active' | 'inactive' | 'blocked'
 }
 
 /**
@@ -29,7 +32,7 @@ export async function getCurrentUser(): Promise<User | null> {
     const supabase = createServiceClient()
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, current_plan_id, diagnostics_limit')
+      .select('id, email, name, current_plan_id, diagnostics_limit, role, status')
       .eq('id', userId)
       .single()
 
@@ -60,5 +63,13 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function isAuthenticated(): Promise<boolean> {
   const user = await getCurrentUser()
   return user !== null
+}
+
+/**
+ * Verifica se o usuário atual é administrador
+ */
+export async function isAdmin(): Promise<boolean> {
+  const user = await getCurrentUser()
+  return user !== null && user.role === 'admin' && user.status === 'active'
 }
 

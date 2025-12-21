@@ -23,9 +23,10 @@ export function useSidebar() {
 interface SidebarProviderProps {
   children: React.ReactNode
   userEmail?: string
+  isAdmin?: boolean
 }
 
-export function SidebarProvider({ children, userEmail }: SidebarProviderProps) {
+export function SidebarProvider({ children, userEmail, isAdmin = false }: SidebarProviderProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const toggle = () => setIsOpen(!isOpen)
@@ -33,7 +34,7 @@ export function SidebarProvider({ children, userEmail }: SidebarProviderProps) {
 
   return (
     <SidebarContext.Provider value={{ isOpen, setIsOpen, toggle }}>
-      <Sidebar userEmail={userEmail} isOpen={isOpen} onClose={close} />
+      <Sidebar userEmail={userEmail} isAdmin={isAdmin} isOpen={isOpen} onClose={close} />
       {children}
     </SidebarContext.Provider>
   )

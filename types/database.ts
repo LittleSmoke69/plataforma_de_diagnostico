@@ -13,27 +13,36 @@ export interface Database {
         Row: {
           id: string
           email: string
+          name: string | null
           password: string | null
           current_plan_id: string | null
           diagnostics_limit: number
+          role: 'user' | 'admin'
+          status: 'active' | 'inactive' | 'blocked'
           created_at: string
           updated_at: string
         }
         Insert: {
           id: string
           email: string
+          name?: string | null
           password?: string | null
           current_plan_id?: string | null
           diagnostics_limit?: number
+          role?: 'user' | 'admin'
+          status?: 'active' | 'inactive' | 'blocked'
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           email?: string
+          name?: string | null
           password?: string | null
           current_plan_id?: string | null
           diagnostics_limit?: number
+          role?: 'user' | 'admin'
+          status?: 'active' | 'inactive' | 'blocked'
           created_at?: string
           updated_at?: string
         }
