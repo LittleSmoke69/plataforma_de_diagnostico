@@ -19,6 +19,10 @@ export async function middleware(request: NextRequest) {
       const loginUrl = new URL('/login', request.url)
       return NextResponse.redirect(loginUrl)
     }
+
+    // A verificação de admin será feita na página mesmo, pois o middleware
+    // não pode fazer chamadas assíncronas complexas de forma eficiente
+    // A página /app/admin faz a verificação e redireciona se necessário
   }
 
   // Redireciona usuários autenticados que tentam acessar /login

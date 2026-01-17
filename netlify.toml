@@ -13,5 +13,9 @@
 [functions]
   node_bundler = "esbuild"
   # Timeout estendido para 30 segundos para lidar com gerações de IA
-  timeout = 30
+  [functions.timeout]
+    external_node_modules = [
+      "module-one",
+      "module-two"
+    ]
 

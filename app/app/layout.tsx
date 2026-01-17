@@ -1,5 +1,5 @@
 import { SidebarProvider } from '@/components/SidebarProvider'
-import { getCurrentUser } from '@/lib/auth/server'
+import { getCurrentUser, isAdmin } from '@/lib/auth/server'
 
 export default async function AppLayout({
   children,
@@ -9,9 +9,10 @@ export default async function AppLayout({
   // O middleware já verifica autenticação, então aqui apenas buscamos o usuário para exibir
   // Se não conseguir buscar, não redireciona (evita loop)
   const user = await getCurrentUser()
+  const admin = await isAdmin()
 
   return (
-    <SidebarProvider userEmail={user?.email}>
+    <SidebarProvider userEmail={user?.email} isAdmin={admin}>
       <div className="min-h-screen bg-white flex lg:h-screen">
         <main className="flex-1 lg:ml-64 min-w-0 overflow-auto">{children}</main>
       </div>
