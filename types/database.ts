@@ -169,6 +169,73 @@ export interface Database {
           created_at?: string
         }
       }
+      free_diagnostics: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          whatsapp: string
+          instagram: string | null
+          pdf_generated: boolean
+          pdf_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          whatsapp: string
+          instagram?: string | null
+          pdf_generated?: boolean
+          pdf_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          whatsapp?: string
+          instagram?: string | null
+          pdf_generated?: boolean
+          pdf_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      free_diagnostic_answers: {
+        Row: {
+          id: string
+          free_diagnostic_id: string
+          question_id: number
+          block: 'financeiro' | 'vendas' | 'marketing' | 'futuro'
+          question_text: string
+          answer_value: string
+          answer_label: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          free_diagnostic_id: string
+          question_id: number
+          block: 'financeiro' | 'vendas' | 'marketing' | 'futuro'
+          question_text: string
+          answer_value: string
+          answer_label: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          free_diagnostic_id?: string
+          question_id?: number
+          block?: 'financeiro' | 'vendas' | 'marketing' | 'futuro'
+          question_text?: string
+          answer_value?: string
+          answer_label?: string
+          created_at?: string
+        }
+      }
     }
   }
 }

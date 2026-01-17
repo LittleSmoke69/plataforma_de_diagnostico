@@ -18,6 +18,333 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animações 3D para o background */
+@keyframes wave {
+  0%, 100% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateX(30px) translateY(-30px) rotate(120deg);
+  }
+  66% {
+    transform: translateX(-30px) translateY(30px) rotate(240deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px) rotate(180deg);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes blob {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: translate(0px, 0px) scale(1);
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: translate(20px, -20px) scale(1.1);
+  }
+  50% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  75% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: translate(10px, 10px) scale(1.05);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.7), 0 0 60px rgba(59, 130, 246, 0.5);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.6s ease-out;
+}
+
+.animate-slide-in-down {
+  animation: slide-in-down 0.5s ease-out;
+}
+
+.card-entrance {
+  animation: slide-in-up 0.7s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 25%, #93c5fd 50%, #60a5fa 75%, #3b82f6 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+.animated-background::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, transparent 70%);
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  top: -250px;
+  left: -250px;
+  animation: blob 20s ease-in-out infinite;
+}
+
+.animated-background::after {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+  border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  bottom: -300px;
+  right: -300px;
+  animation: blob 25s ease-in-out infinite reverse;
+}
+
+.floating-element {
+  position: absolute;
+  opacity: 0.4;
+  animation: float 15s ease-in-out infinite;
+}
+
+.floating-element:nth-child(1) {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(59, 130, 246, 0.2));
+  border-radius: 50%;
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.floating-element:nth-child(2) {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(14, 165, 233, 0.2));
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  top: 60%;
+  right: 15%;
+  animation-delay: -5s;
+}
+
+.floating-element:nth-child(3) {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(96, 165, 250, 0.2));
+  border-radius: 50%;
+  bottom: 20%;
+  left: 20%;
+  animation-delay: -10s;
+}
+
+.wave-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  opacity: 0.3;
+}
+
+.wave-path {
+  animation: wave 20s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.success-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(14, 165, 233, 0.2);
+  animation: slide-up 0.6s ease-out;
+}
+
+.success-icon-container {
+  animation: scale-in 0.8s ease-out, pulse-glow 2s ease-in-out infinite;
+  animation-delay: 0s, 1s;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fbbf24;
+  animation: confetti-fall 3s linear infinite;
+}
+
+.confetti:nth-child(2) {
+  background: #f472b6;
+  left: 10%;
+  animation-delay: 0.5s;
+}
+
+.confetti:nth-child(3) {
+  background: #60a5fa;
+  left: 20%;
+  animation-delay: 1s;
+}
+
+.confetti:nth-child(4) {
+  background: #34d399;
+  left: 30%;
+  animation-delay: 1.5s;
+}
+
+.confetti:nth-child(5) {
+  background: #f59e0b;
+  left: 40%;
+  animation-delay: 0.3s;
+}
+
+.confetti:nth-child(6) {
+  background: #a78bfa;
+  left: 50%;
+  animation-delay: 1.2s;
+}
+
+.confetti:nth-child(7) {
+  background: #fb7185;
+  left: 60%;
+  animation-delay: 0.8s;
+}
+
+.confetti:nth-child(8) {
+  background: #38bdf8;
+  left: 70%;
+  animation-delay: 1.8s;
+}
+
+.confetti:nth-child(9) {
+  background: #fbbf24;
+  left: 80%;
+  animation-delay: 0.2s;
+}
+
+.confetti:nth-child(10) {
+  background: #34d399;
+  left: 90%;
+  animation-delay: 1.4s;
 }
 
 /* Estilos globais para inputs - texto preto, placeholder cinza */

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { DiagnosticForm } from '@/components/DiagnosticForm'
+import { Radar360ProForm } from '@/components/Radar360ProForm'
 
 export default async function DiagnosticFormPage({
   params,
@@ -39,8 +39,8 @@ export default async function DiagnosticFormPage({
     .order('created_at', { ascending: true })
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-6">
-      <DiagnosticForm diagnosticId={params.id} existingAnswers={existingAnswers || []} />
+    <div className="max-w-full mx-auto">
+      <Radar360ProForm diagnosticId={params.id} />
     </div>
   )
 }
